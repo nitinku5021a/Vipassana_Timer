@@ -96,18 +96,18 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Nitin\.gradle\cach
 	android:fullBackupContent
 		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:13:9-54
 	android:roundIcon
-		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:16:9-61
+		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:16:9-50
 	tools:targetApi
 		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:19:9-29
 	android:icon
-		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:14:9-56
+		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:14:9-45
 	android:allowBackup
 		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:11:9-35
 	android:theme
 		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:18:9-47
 	android:dataExtractionRules
 		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:12:9-65
-activity#com.example.vipassana.MainActivity
+activity#com.vipassana.silenttimer.MainActivity
 ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:21:9-29:20
 	android:exported
 		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:23:13-36
@@ -125,7 +125,7 @@ category#android.intent.category.LAUNCHER
 ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:27:17-77
 	android:name
 		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:27:27-74
-service#com.example.vipassana.service.TimerService
+service#com.vipassana.silenttimer.service.TimerService
 ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:31:9-34:58
 	tools:ignore
 		ADDED from D:\Work\Vipassana App\app\src\main\AndroidManifest.xml:34:13-55
@@ -249,7 +249,7 @@ ADDED from [androidx.core:core:1.12.0] C:\Users\Nitin\.gradle\caches\9.0-milesto
 		ADDED from [androidx.core:core:1.12.0] C:\Users\Nitin\.gradle\caches\9.0-milestone-1\transforms\5f2aa0165b2ab0df5ca7c40d78259b54\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\Nitin\.gradle\caches\9.0-milestone-1\transforms\5f2aa0165b2ab0df5ca7c40d78259b54\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
-permission#com.example.vipassana.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+permission#com.vipassana.silenttimer.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\Nitin\.gradle\caches\9.0-milestone-1\transforms\5f2aa0165b2ab0df5ca7c40d78259b54\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
 	android:protectionLevel
 		ADDED from [androidx.core:core:1.12.0] C:\Users\Nitin\.gradle\caches\9.0-milestone-1\transforms\5f2aa0165b2ab0df5ca7c40d78259b54\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
@@ -259,7 +259,7 @@ uses-permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\Nitin\.gradle\caches\9.0-milestone-1\transforms\5f2aa0165b2ab0df5ca7c40d78259b54\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\Nitin\.gradle\caches\9.0-milestone-1\transforms\5f2aa0165b2ab0df5ca7c40d78259b54\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
-uses-permission#com.example.vipassana.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission#com.vipassana.silenttimer.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\Nitin\.gradle\caches\9.0-milestone-1\transforms\5f2aa0165b2ab0df5ca7c40d78259b54\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
 	android:name
 		ADDED from [androidx.core:core:1.12.0] C:\Users\Nitin\.gradle\caches\9.0-milestone-1\transforms\5f2aa0165b2ab0df5ca7c40d78259b54\transformed\core-1.12.0\AndroidManifest.xml:26:22-94

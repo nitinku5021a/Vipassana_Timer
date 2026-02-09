@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.vipassana.app-mergeReleaseResources-38:/values-az/values-az.xml",
+            "outputFile": "com.vipassana.silenttimer.app-mergeReleaseResources-38:/values-az/values-az.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Nitin\\.gradle\\caches\\9.0-milestone-1\\transforms\\21082eacf4471c20b3d24d45a663ca84\\transformed\\material3-release\\res\\values-az\\values-az.xml",

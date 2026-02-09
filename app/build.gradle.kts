@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.example.vipassana"
-    compileSdk = 34
+    namespace = "com.vipassana.silenttimer"
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.vipassana"
+        applicationId = "com.vipassana.silenttimer"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        targetSdk = 35
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

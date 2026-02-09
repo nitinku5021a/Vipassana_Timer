@@ -1,22 +1,26 @@
 [
     {
-        "merged": "C:\\Users\\Nitin\\.gradle\\daemon\\9.0-milestone-1\\com.example.vipassana.app-merged_res-40:\\xml_backup_rules.xml.flat",
-        "source": "C:\\Users\\Nitin\\.gradle\\daemon\\9.0-milestone-1\\com.example.vipassana.app-main-42:\\xml\\backup_rules.xml"
+        "merged": "com.vipassana.silenttimer.app-merged_res-40:/xml_backup_rules.xml.flat",
+        "source": "com.vipassana.silenttimer.app-main-42:/xml/backup_rules.xml"
     },
     {
-        "merged": "C:\\Users\\Nitin\\.gradle\\daemon\\9.0-milestone-1\\com.example.vipassana.app-merged_res-40:\\xml_data_extraction_rules.xml.flat",
-        "source": "C:\\Users\\Nitin\\.gradle\\daemon\\9.0-milestone-1\\com.example.vipassana.app-main-42:\\xml\\data_extraction_rules.xml"
+        "merged": "com.vipassana.silenttimer.app-merged_res-40:/raw_gong_start.mp3.flat",
+        "source": "com.vipassana.silenttimer.app-main-42:/raw/gong_start.mp3"
     },
     {
-        "merged": "com.example.vipassana.app-merged_res-40:/raw_gong_end.mp3.flat",
-        "source": "com.example.vipassana.app-main-42:/raw/gong_end.mp3"
+        "merged": "com.vipassana.silenttimer.app-merged_res-40:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "com.vipassana.silenttimer.app-main-42:/drawable/ic_launcher_foreground.xml"
     },
     {
-        "merged": "C:\\Users\\Nitin\\.gradle\\daemon\\9.0-milestone-1\\com.example.vipassana.app-merged_res-40:\\drawable_ic_launcher_foreground.xml.flat",
-        "source": "C:\\Users\\Nitin\\.gradle\\daemon\\9.0-milestone-1\\com.example.vipassana.app-main-42:\\drawable\\ic_launcher_foreground.xml"
+        "merged": "com.vipassana.silenttimer.app-merged_res-40:/raw_gong_end.mp3.flat",
+        "source": "com.vipassana.silenttimer.app-main-42:/raw/gong_end.mp3"
     },
     {
-        "merged": "com.example.vipassana.app-merged_res-40:/raw_gong_start.mp3.flat",
-        "source": "com.example.vipassana.app-main-42:/raw/gong_start.mp3"
+        "merged": "com.vipassana.silenttimer.app-merged_res-40:/xml_data_extraction_rules.xml.flat",
+        "source": "com.vipassana.silenttimer.app-main-42:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.vipassana.silenttimer.app-merged_res-40:/drawable_ic_app_icon.jpg.flat",
+        "source": "com.vipassana.silenttimer.app-main-42:/drawable/ic_app_icon.jpg"
     }
 ]

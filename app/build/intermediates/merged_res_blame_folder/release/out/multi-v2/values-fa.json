@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.vipassana.app-mergeReleaseResources-38:/values-fa/values-fa.xml",
+            "outputFile": "com.vipassana.silenttimer.app-mergeReleaseResources-38:/values-fa/values-fa.xml",
             "map": [
                 {
                     "source": "C:\\Users\\Nitin\\.gradle\\caches\\9.0-milestone-1\\transforms\\73a916a919c56378ac89b3783de5fc75\\transformed\\foundation-release\\res\\values-fa\\values-fa.xml",

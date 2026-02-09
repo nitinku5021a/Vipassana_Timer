@@ -4,7 +4,7 @@
     "type": "MERGED_MANIFESTS",
     "kind": "Directory"
   },
-  "applicationId": "com.example.vipassana",
+  "applicationId": "com.vipassana.silenttimer",
   "variantName": "debug",
   "elements": [
     {

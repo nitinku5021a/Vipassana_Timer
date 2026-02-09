@@ -4,7 +4,7 @@
     "type": "COMPATIBLE_SCREEN_MANIFEST",
     "kind": "Directory"
   },
-  "applicationId": "com.example.vipassana",
+  "applicationId": "com.vipassana.silenttimer",
   "variantName": "debug",
   "elements": []
 }
