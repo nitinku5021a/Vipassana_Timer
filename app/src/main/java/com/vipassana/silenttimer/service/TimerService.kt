@@ -13,6 +13,7 @@ import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.vipassana.silenttimer.R
+import com.vipassana.silenttimer.logging.MeditationLogStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +23,10 @@ class TimerService : Service() {
     private val binder = LocalBinder()
     private var wakeLock: PowerManager.WakeLock? = null
     private var timer: CountDownTimer? = null
+    private var prepTimer: CountDownTimer? = null
     private var mediaPlayer: MediaPlayer? = null
+    private var hasPlayedPreEndDong = false
+    private var hasLoggedSession = false
 
     private val _timeLeftInMillis = MutableStateFlow(0L)
     val timeLeftInMillis: StateFlow<Long> = _timeLeftInMillis.asStateFlow()
@@ -33,12 +37,18 @@ class TimerService : Service() {
     private val _isTimerRunning = MutableStateFlow(false)
     val isTimerRunning: StateFlow<Boolean> = _isTimerRunning.asStateFlow()
 
+    private val _isInPrep = MutableStateFlow(false)
+    val isInPrep: StateFlow<Boolean> = _isInPrep.asStateFlow()
+
     companion object {
         const val CHANNEL_ID = "VipassanaTimerChannel"
         const val NOTIFICATION_ID = 1
         const val ACTION_START = "com.vipassana.silenttimer.START"
         const val ACTION_STOP = "com.vipassana.silenttimer.STOP"
         const val EXTRA_DURATION = "com.vipassana.silenttimer.DURATION"
+        private const val PREP_TIME_MILLIS = 8 * 1000L
+        private const val PRE_END_DONG_OFFSET_MILLIS = 5 * 60 * 1000L
+        private const val MIN_DURATION_FOR_PRE_DONG_MILLIS = 30 * 60 * 1000L
     }
 
     inner class LocalBinder : Binder() {
@@ -69,6 +79,9 @@ class TimerService : Service() {
 
     private fun startTimerInternal(durationMillis: Long) {
         if (_isTimerRunning.value) return
+        hasPlayedPreEndDong = false
+        hasLoggedSession = false
+        _isInPrep.value = true
 
         // Acquire WakeLock
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -78,23 +91,42 @@ class TimerService : Service() {
         // Start Foreground IMMEDIATELY
         startForeground(NOTIFICATION_ID, createNotification("Consulting the silence..."))
 
-        // Play Start Gong
-        playSound(R.raw.gong_start)
-
         _isTimerRunning.value = true
         _totalDurationInMillis.value = durationMillis
-        timer = object : CountDownTimer(durationMillis, 1000) {
+        prepTimer = object : CountDownTimer(PREP_TIME_MILLIS, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 _timeLeftInMillis.value = millisUntilFinished
-                updateNotification("Time remaining: ${formatTime(millisUntilFinished)}")
+                updateNotification("Starting in: ${formatTime(millisUntilFinished)}")
             }
 
             override fun onFinish() {
-                _timeLeftInMillis.value = 0
-                playEndGongs()
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                _isTimerRunning.value = false
-                releaseWakeLock()
+                _isInPrep.value = false
+                // Play Start Gong at actual start
+                playSound(R.raw.gong_start)
+                timer = object : CountDownTimer(durationMillis, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        _timeLeftInMillis.value = millisUntilFinished
+                        updateNotification("Time remaining: ${formatTime(millisUntilFinished)}")
+                        if (!hasPlayedPreEndDong &&
+                            durationMillis > MIN_DURATION_FOR_PRE_DONG_MILLIS &&
+                            millisUntilFinished <= PRE_END_DONG_OFFSET_MILLIS
+                        ) {
+                            playSound(R.raw.gong_start)
+                            hasPlayedPreEndDong = true
+                        }
+                    }
+
+                    override fun onFinish() {
+                        _timeLeftInMillis.value = 0
+                        logSession(durationMillis)
+                        hasLoggedSession = true
+                        playEndGongs()
+                        stopForeground(STOP_FOREGROUND_REMOVE)
+                        _isTimerRunning.value = false
+                        _isInPrep.value = false
+                        releaseWakeLock()
+                    }
+                }.start()
             }
         }.start()
     }
@@ -105,8 +137,15 @@ class TimerService : Service() {
     }
 
     fun stopTimer() {
+        val elapsed = _totalDurationInMillis.value - _timeLeftInMillis.value
+        if (!hasLoggedSession && elapsed > 0) {
+            logSession(elapsed)
+            hasLoggedSession = true
+        }
+        prepTimer?.cancel()
         timer?.cancel()
         _isTimerRunning.value = false
+        _isInPrep.value = false
         _timeLeftInMillis.value = 0
         stopForeground(STOP_FOREGROUND_REMOVE)
         releaseWakeLock()
@@ -166,6 +205,11 @@ class TimerService : Service() {
                  try { Thread.sleep(3000) } catch (e: InterruptedException) {}
             }
         }.start()
+    }
+
+    private fun logSession(durationMillis: Long) {
+        if (durationMillis <= 0) return
+        MeditationLogStore.addSession(applicationContext, durationMillis)
     }
 
     private fun releaseWakeLock() {

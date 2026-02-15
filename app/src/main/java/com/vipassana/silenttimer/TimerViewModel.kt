@@ -7,11 +7,15 @@ import android.content.ServiceConnection
 import android.os.IBinder
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vipassana.silenttimer.logging.DailyTotal
+import com.vipassana.silenttimer.logging.MeditationLogStore
 import com.vipassana.silenttimer.service.TimerService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TimerViewModel : ViewModel() {
 
@@ -28,6 +32,12 @@ class TimerViewModel : ViewModel() {
     private val _isRunning = MutableStateFlow(false)
     val isRunning: StateFlow<Boolean> = _isRunning.asStateFlow()
 
+    private val _isInPrep = MutableStateFlow(false)
+    val isInPrep: StateFlow<Boolean> = _isInPrep.asStateFlow()
+
+    private val _dailyLogs = MutableStateFlow<List<DailyTotal>>(emptyList())
+    val dailyLogs: StateFlow<List<DailyTotal>> = _dailyLogs.asStateFlow()
+
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as TimerService.LocalBinder
@@ -43,6 +53,9 @@ class TimerViewModel : ViewModel() {
             }
             viewModelScope.launch {
                 timerService?.isTimerRunning?.collect { _isRunning.value = it }
+            }
+            viewModelScope.launch {
+                timerService?.isInPrep?.collect { _isInPrep.value = it }
             }
         }
 
@@ -78,5 +91,14 @@ class TimerViewModel : ViewModel() {
         val intent = Intent(context, TimerService::class.java)
         intent.action = TimerService.ACTION_STOP
         context.startService(intent) // Send stop action
+    }
+
+    fun refreshLogs(context: Context) {
+        viewModelScope.launch {
+            val logs = withContext(Dispatchers.IO) {
+                MeditationLogStore.loadDailyTotals(context)
+            }
+            _dailyLogs.value = logs
+        }
     }
 }

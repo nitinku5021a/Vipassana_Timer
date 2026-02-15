@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,10 +39,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardType
-import com.vipassana.silenttimer.ui.theme.VipassanaGold
 
 @Composable
-fun HomeScreen(onDurationSelected: (Long) -> Unit) {
+fun HomeScreen(
+    onDurationSelected: (Long) -> Unit,
+    onOpenLog: () -> Unit
+) {
     val durations = listOf(
         15L to "15\nMins",
         30L to "30\nMins",
@@ -69,6 +72,24 @@ fun HomeScreen(onDurationSelected: (Long) -> Unit) {
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .clickable(onClick = onOpenLog)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Meditation Log",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(48.dp))
         Text(
             text = "Vipassana",

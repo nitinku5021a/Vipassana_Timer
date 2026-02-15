@@ -15,8 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import com.vipassana.silenttimer.ui.CalendarLogScreen
 import com.vipassana.silenttimer.ui.HomeScreen
 import com.vipassana.silenttimer.ui.TimerScreen
 import com.vipassana.silenttimer.ui.theme.VipassanaTheme
@@ -63,21 +67,36 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun VipassanaApp(viewModel: TimerViewModel) {
     val isRunning by viewModel.isRunning.collectAsState()
+    val isInPrep by viewModel.isInPrep.collectAsState()
     val timeLeft by viewModel.timeLeft.collectAsState()
     val totalDuration by viewModel.totalDuration.collectAsState()
+    val dailyLogs by viewModel.dailyLogs.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    var showLog by remember { mutableStateOf(false) }
 
     if (isRunning) {
         TimerScreen(
             timeLeft = timeLeft,
             totalDuration = totalDuration,
+            isInPrep = isInPrep,
             onStop = { viewModel.stopTimer(context) }
         )
     } else {
-        HomeScreen(
-            onDurationSelected = { duration ->
-                viewModel.startTimer(context, duration)
+        if (showLog) {
+            LaunchedEffect(Unit) {
+                viewModel.refreshLogs(context)
             }
-        )
+            CalendarLogScreen(
+                logs = dailyLogs,
+                onBack = { showLog = false }
+            )
+        } else {
+            HomeScreen(
+                onDurationSelected = { duration ->
+                    viewModel.startTimer(context, duration)
+                },
+                onOpenLog = { showLog = true }
+            )
+        }
     }
 }

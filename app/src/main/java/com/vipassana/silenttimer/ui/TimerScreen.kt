@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 fun TimerScreen(
     timeLeft: Long,
     totalDuration: Long,
+    isInPrep: Boolean,
     onStop: () -> Unit
 ) {
     val minutes = (timeLeft / 1000) / 60
@@ -40,14 +41,31 @@ fun TimerScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Analog Clock - Centered and Square
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(0.85f)
-                .aspectRatio(1f),
-            contentAlignment = Alignment.Center
-        ) {
-            AnalogClock(timeLeft = timeLeft, totalDuration = totalDuration)
+        if (isInPrep) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .aspectRatio(1f)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Starting in...",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        } else {
+            // Analog Clock - Centered and Square
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .aspectRatio(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                AnalogClock(timeLeft = timeLeft, totalDuration = totalDuration)
+            }
         }
 
         Spacer(modifier = Modifier.height(48.dp))
