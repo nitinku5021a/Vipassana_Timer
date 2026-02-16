@@ -15,6 +15,9 @@ A minimalist Vipassana meditation timer for Android built with Kotlin and Jetpac
 - Local JSON storage in app internal files
 
 ## Getting Started
+## Play Store
+`https://play.google.com/store/apps/details?id=com.vipassana.silenttimer`
+
 ### Prerequisites
 - Android Studio (Hedgehog or newer recommended)
 - Android SDK 35
