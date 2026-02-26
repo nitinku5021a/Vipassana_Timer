@@ -35,6 +35,27 @@ class TimerViewModel : ViewModel() {
     private val _isInPrep = MutableStateFlow(false)
     val isInPrep: StateFlow<Boolean> = _isInPrep.asStateFlow()
 
+    private val _hasCompleted = MutableStateFlow(false)
+    val hasCompleted: StateFlow<Boolean> = _hasCompleted.asStateFlow()
+
+    private val _completionTitle = MutableStateFlow("Session Complete")
+    val completionTitle: StateFlow<String> = _completionTitle.asStateFlow()
+
+    private val _completionDuration = MutableStateFlow(0L)
+    val completionDuration: StateFlow<Long> = _completionDuration.asStateFlow()
+
+    private val _isAwarenessRunning = MutableStateFlow(false)
+    val isAwarenessRunning: StateFlow<Boolean> = _isAwarenessRunning.asStateFlow()
+
+    private val _awarenessTimeLeft = MutableStateFlow(0L)
+    val awarenessTimeLeft: StateFlow<Long> = _awarenessTimeLeft.asStateFlow()
+
+    private val _awarenessTotalDuration = MutableStateFlow(0L)
+    val awarenessTotalDuration: StateFlow<Long> = _awarenessTotalDuration.asStateFlow()
+
+    private val _awarenessInterval = MutableStateFlow(0L)
+    val awarenessInterval: StateFlow<Long> = _awarenessInterval.asStateFlow()
+
     private val _dailyLogs = MutableStateFlow<List<DailyTotal>>(emptyList())
     val dailyLogs: StateFlow<List<DailyTotal>> = _dailyLogs.asStateFlow()
 
@@ -56,6 +77,27 @@ class TimerViewModel : ViewModel() {
             }
             viewModelScope.launch {
                 timerService?.isInPrep?.collect { _isInPrep.value = it }
+            }
+            viewModelScope.launch {
+                timerService?.hasCompleted?.collect { _hasCompleted.value = it }
+            }
+            viewModelScope.launch {
+                timerService?.completionTitle?.collect { _completionTitle.value = it }
+            }
+            viewModelScope.launch {
+                timerService?.completionDuration?.collect { _completionDuration.value = it }
+            }
+            viewModelScope.launch {
+                timerService?.isAwarenessRunning?.collect { _isAwarenessRunning.value = it }
+            }
+            viewModelScope.launch {
+                timerService?.awarenessTimeLeftInMillis?.collect { _awarenessTimeLeft.value = it }
+            }
+            viewModelScope.launch {
+                timerService?.awarenessTotalDurationInMillis?.collect { _awarenessTotalDuration.value = it }
+            }
+            viewModelScope.launch {
+                timerService?.awarenessIntervalInMillis?.collect { _awarenessInterval.value = it }
             }
         }
 
@@ -91,6 +133,29 @@ class TimerViewModel : ViewModel() {
         val intent = Intent(context, TimerService::class.java)
         intent.action = TimerService.ACTION_STOP
         context.startService(intent) // Send stop action
+    }
+
+    fun startAwareness(context: Context, durationMillis: Long, intervalMillis: Long) {
+        val intent = Intent(context, TimerService::class.java).apply {
+            action = TimerService.ACTION_START_AWARENESS
+            putExtra(TimerService.EXTRA_AWARENESS_DURATION, durationMillis)
+            putExtra(TimerService.EXTRA_AWARENESS_INTERVAL, intervalMillis)
+        }
+        context.startForegroundService(intent)
+    }
+
+    fun stopAwareness(context: Context) {
+        timerService?.stopAwareness()
+        val intent = Intent(context, TimerService::class.java)
+        intent.action = TimerService.ACTION_STOP_AWARENESS
+        context.startService(intent)
+    }
+
+    fun clearCompletion() {
+        timerService?.clearCompletion()
+        _hasCompleted.value = false
+        _completionTitle.value = "Session Complete"
+        _completionDuration.value = 0L
     }
 
     fun refreshLogs(context: Context) {
