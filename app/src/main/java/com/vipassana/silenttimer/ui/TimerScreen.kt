@@ -1,7 +1,6 @@
 package com.vipassana.silenttimer.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,30 +35,36 @@ fun TimerScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(
+            text = if (isInPrep) "SETTLING" else "SITTING",
+            style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 4.sp),
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
+        )
+        Spacer(modifier = Modifier.height(32.dp))
+
         if (isInPrep) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
+                    .fillMaxWidth(0.78f)
                     .aspectRatio(1f)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Starting in...",
+                    text = "Starting in…",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
             }
         } else {
-            // Analog Clock - Centered and Square
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
+                    .fillMaxWidth(0.82f)
                     .aspectRatio(1f),
                 contentAlignment = Alignment.Center
             ) {
@@ -68,30 +72,16 @@ fun TimerScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(36.dp))
 
-        // Digital Time
         Text(
             text = timeFormatted,
-            style = MaterialTheme.typography.displayLarge.copy(fontSize = 64.sp),
+            style = MaterialTheme.typography.displayLarge.copy(fontSize = 56.sp, letterSpacing = 2.sp),
             color = MaterialTheme.colorScheme.primary
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(36.dp))
 
-        // Stop Button
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.surface)
-                .clickable(onClick = onStop)
-                .padding(horizontal = 32.dp, vertical = 16.dp)
-        ) {
-            Text(
-                text = "End Session",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-        }
+        QuietButton(text = "End session", onClick = onStop)
     }
 }

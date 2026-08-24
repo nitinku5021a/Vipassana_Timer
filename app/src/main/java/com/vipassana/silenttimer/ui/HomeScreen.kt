@@ -16,26 +16,28 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+private data class DurationOption(val minutes: Long, val value: String, val unit: String)
 
 @Composable
 fun HomeScreen(
@@ -43,13 +45,13 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val durations = listOf(
-        15L to "15\nMins",
-        30L to "30\nMins",
-        45L to "45\nMins",
-        60L to "1\nHour",
-        120L to "2\nHours"
+        DurationOption(15, "15", "minutes"),
+        DurationOption(30, "30", "minutes"),
+        DurationOption(45, "45", "minutes"),
+        DurationOption(60, "1", "hour"),
+        DurationOption(120, "2", "hours")
     )
-    
+
     var showCustomDialog by remember { mutableStateOf(false) }
 
     if (showCustomDialog) {
@@ -66,36 +68,36 @@ fun HomeScreen(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
+            .padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(12.dp))
         Text(
             text = "Vipassana",
-            style = MaterialTheme.typography.displayLarge.copy(fontSize = 48.sp),
+            style = MaterialTheme.typography.displayLarge.copy(fontSize = 42.sp),
             color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.Center
         )
         Text(
-            text = "Silence & Insight",
-            style = MaterialTheme.typography.bodyLarge.copy(letterSpacing = 2.sp),
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-            modifier = Modifier.padding(top = 8.dp, bottom = 64.dp)
+            text = "SILENCE  ·  INSIGHT",
+            style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 3.sp),
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f),
+            modifier = Modifier.padding(top = 8.dp, bottom = 36.dp)
         )
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
-            items(durations) { (minutes, label) ->
-                TimerOptionCard(label = label) {
-                    onDurationSelected(minutes * 60 * 1000)
+            items(durations) { option ->
+                TimerOptionCard(value = option.value, unit = option.unit) {
+                    onDurationSelected(option.minutes * 60 * 1000)
                 }
             }
             item {
-                TimerOptionCard(label = "Custom") {
+                TimerOptionCard(value = "+", unit = "custom") {
                     showCustomDialog = true
                 }
             }
@@ -112,12 +114,13 @@ fun CustomDurationDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(text = "Set Duration", style = MaterialTheme.typography.headlineSmall) },
+        title = { Text(text = "Custom sit", style = MaterialTheme.typography.headlineSmall) },
         text = {
             Column {
                 Text(
-                    text = "Enter minutes (1-240):",
+                    text = "Minutes (1–240)",
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 TextField(
@@ -137,46 +140,52 @@ fun CustomDurationDialog(
             TextButton(
                 onClick = {
                     val minutes = text.toLongOrNull()
-                    if (minutes != null && minutes > 0) {
+                    if (minutes != null && minutes in 1..240) {
                         onConfirm(minutes)
                     }
                 }
             ) {
-                Text("Start", color = MaterialTheme.colorScheme.primary)
+                Text("Begin", color = MaterialTheme.colorScheme.primary)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                Text("Cancel", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f))
             }
         },
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = MaterialTheme.colorScheme.background,
         textContentColor = MaterialTheme.colorScheme.onSurface,
         titleContentColor = MaterialTheme.colorScheme.onSurface
     )
 }
 
 @Composable
-fun TimerOptionCard(label: String, onClick: () -> Unit) {
+fun TimerOptionCard(value: String, unit: String, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(28.dp)
     Box(
         modifier = Modifier
             .aspectRatio(1f)
-            .clip(RoundedCornerShape(32.dp))
+            .clip(shape)
             .background(MaterialTheme.colorScheme.surface)
-            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(32.dp))
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.22f), shape)
             .clickable(onClick = onClick)
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-             // We could add an icon here if we had one, but let's stick to elegant text
             Text(
-                text = label,
-                style = MaterialTheme.typography.headlineMedium.copy(fontSize = 24.sp),
+                text = value,
+                style = MaterialTheme.typography.displaySmall.copy(fontSize = 36.sp),
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.Normal,
-                textAlign = TextAlign.Center,
-                lineHeight = 32.sp
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = unit.uppercase(),
+                style = MaterialTheme.typography.labelLarge.copy(fontSize = 11.sp, letterSpacing = 1.6.sp),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                textAlign = TextAlign.Center
             )
         }
     }

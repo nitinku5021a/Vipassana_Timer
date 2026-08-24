@@ -15,6 +15,7 @@ import android.os.Looper
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import com.vipassana.silenttimer.R
+import com.vipassana.silenttimer.audio.GongPreferences
 import com.vipassana.silenttimer.logging.MeditationLogStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,6 +31,8 @@ class TimerService : Service() {
     private var mediaPlayer: MediaPlayer? = null
     private val mainHandler = Handler(Looper.getMainLooper())
     private var stopRunnable: Runnable? = null
+    private var endGongRunnable: Runnable? = null
+    private var endGongCompleteRunnable: Runnable? = null
     private var hasPlayedPreEndDong = false
     private var hasLoggedSession = false
 
@@ -79,7 +82,9 @@ class TimerService : Service() {
         private const val PREP_TIME_MILLIS = 8 * 1000L
         private const val PRE_END_DONG_OFFSET_MILLIS = 5 * 60 * 1000L
         private const val MIN_DURATION_FOR_PRE_DONG_MILLIS = 30 * 60 * 1000L
-        private const val GONG_PLAY_DURATION_MILLIS = 9 * 1000L
+        private const val END_GONG_COUNT = 3
+        private const val END_GONG_GAP_MILLIS = 2 * 1000L
+        private const val END_GONG_WAKELOCK_MILLIS = 15 * 60 * 1000L
     }
 
     inner class LocalBinder : Binder() {
@@ -125,10 +130,10 @@ class TimerService : Service() {
         _completionDuration.value = 0L
         _isInPrep.value = true
 
-        // Acquire WakeLock
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Vipassana::TimerWakeLock")
-        wakeLock?.acquire(durationMillis + 10000)
+        acquireWakeLock(
+            "Vipassana::TimerWakeLock",
+            durationMillis + PREP_TIME_MILLIS + END_GONG_WAKELOCK_MILLIS
+        )
 
         // Start Foreground IMMEDIATELY
         startForeground(NOTIFICATION_ID, createNotification("Consulting the silence..."))
@@ -144,7 +149,7 @@ class TimerService : Service() {
             override fun onFinish() {
                 _isInPrep.value = false
                 // Play Start Gong at actual start
-                playSound(R.raw.gong_start)
+                playSelectedGong()
                 timer = object : CountDownTimer(durationMillis, 1000) {
                     override fun onTick(millisUntilFinished: Long) {
                         _timeLeftInMillis.value = millisUntilFinished
@@ -153,7 +158,7 @@ class TimerService : Service() {
                             durationMillis > MIN_DURATION_FOR_PRE_DONG_MILLIS &&
                             millisUntilFinished <= PRE_END_DONG_OFFSET_MILLIS
                         ) {
-                            playSound(R.raw.gong_start)
+                            playSelectedGong()
                             hasPlayedPreEndDong = true
                         }
                     }
@@ -164,12 +169,13 @@ class TimerService : Service() {
                         hasLoggedSession = true
                         _completionTitle.value = "Session Complete"
                         _completionDuration.value = durationMillis
-                        _hasCompleted.value = true
-                        playEndGongs()
-                        stopForeground(STOP_FOREGROUND_REMOVE)
                         _isTimerRunning.value = false
                         _isInPrep.value = false
-                        releaseWakeLock()
+                        _hasCompleted.value = true
+                        playEndGongs {
+                            stopForeground(STOP_FOREGROUND_REMOVE)
+                            releaseWakeLock()
+                        }
                     }
                 }.start()
             }
@@ -203,6 +209,7 @@ class TimerService : Service() {
         _timeLeftInMillis.value = 0
         stopForeground(STOP_FOREGROUND_REMOVE)
         releaseWakeLock()
+        cancelEndGongs()
         stopRunnable?.let { mainHandler.removeCallbacks(it) }
         stopRunnable = null
         mediaPlayer?.release()
@@ -219,9 +226,10 @@ class TimerService : Service() {
         _awarenessIntervalInMillis.value = intervalMillis
         _awarenessTimeLeftInMillis.value = durationMillis
 
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Vipassana::AwarenessWakeLock")
-        wakeLock?.acquire(durationMillis + 10000)
+        acquireWakeLock(
+            "Vipassana::AwarenessWakeLock",
+            durationMillis + END_GONG_WAKELOCK_MILLIS
+        )
 
         startForeground(NOTIFICATION_ID, createNotification("Awareness in progress..."))
 
@@ -232,7 +240,7 @@ class TimerService : Service() {
                 updateNotification("Awareness: ${formatTime(millisUntilFinished)} remaining")
                 val elapsed = durationMillis - millisUntilFinished
                 if (nextGongAtMillis < durationMillis && elapsed >= nextGongAtMillis) {
-                    playSound(R.raw.gong_start)
+                    playSelectedGong()
                     nextGongAtMillis += intervalMillis
                 }
             }
@@ -242,10 +250,11 @@ class TimerService : Service() {
                 _completionTitle.value = "Awareness Complete"
                 _completionDuration.value = durationMillis
                 _hasCompleted.value = true
-                playEndGongs()
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                _isAwarenessRunning.value = false
-                releaseWakeLock()
+                playEndGongs {
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                    _isAwarenessRunning.value = false
+                    releaseWakeLock()
+                }
             }
         }.start()
     }
@@ -261,15 +270,26 @@ class TimerService : Service() {
         _completionDuration.value = 0L
         stopForeground(STOP_FOREGROUND_REMOVE)
         releaseWakeLock()
+        cancelEndGongs()
         stopRunnable?.let { mainHandler.removeCallbacks(it) }
         stopRunnable = null
         mediaPlayer?.release()
         mediaPlayer = null
     }
 
-    private fun playSound(resId: Int, durationMillis: Long = GONG_PLAY_DURATION_MILLIS) {
+    private fun playSelectedGong(
+        maxDurationMillis: Long? = null,
+        onFinished: (() -> Unit)? = null
+    ) {
+        playSound(GongPreferences.selectedSound(this).resId, maxDurationMillis, onFinished)
+    }
+
+    private fun playSound(
+        resId: Int,
+        maxDurationMillis: Long? = null,
+        onFinished: (() -> Unit)? = null
+    ) {
         try {
-            // Request Audio Focus to ensure clarity
             val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
             audioManager.requestAudioFocus(
                 null,
@@ -281,66 +301,89 @@ class TimerService : Service() {
             stopRunnable = null
             mediaPlayer?.release()
             mediaPlayer = MediaPlayer.create(this, resId)
-            
+
             if (mediaPlayer == null) {
-                println("Vipassana: MediaPlayer creation failed for resId $resId")
+                onFinished?.invoke()
                 return
             }
 
             mediaPlayer?.apply {
+                setWakeMode(this@TimerService, PowerManager.PARTIAL_WAKE_LOCK)
                 setAudioAttributes(
                     android.media.AudioAttributes.Builder()
                         .setContentType(android.media.AudioAttributes.CONTENT_TYPE_MUSIC)
                         .setUsage(android.media.AudioAttributes.USAGE_MEDIA)
                         .build()
                 )
-                setVolume(1.0f, 1.0f) // Max volume relative to stream
+                setVolume(1.0f, 1.0f)
+                var finished = false
+                fun finish() {
+                    if (finished) return
+                    finished = true
+                    stopRunnable?.let { mainHandler.removeCallbacks(it) }
+                    stopRunnable = null
+                    onFinished?.invoke()
+                }
                 setOnCompletionListener { player ->
                     player.release()
                     if (mediaPlayer === player) {
                         mediaPlayer = null
                     }
+                    finish()
                 }
-                val stopTask = Runnable {
-                    val player = mediaPlayer
-                    if (player != null) {
-                        try {
-                            if (player.isPlaying) {
-                                player.stop()
+                if (maxDurationMillis != null) {
+                    val stopTask = Runnable {
+                        val player = mediaPlayer
+                        if (player != null) {
+                            try {
+                                if (player.isPlaying) {
+                                    player.stop()
+                                }
+                            } catch (_: IllegalStateException) {
                             }
-                        } catch (_: IllegalStateException) {
+                            player.release()
+                            if (mediaPlayer === player) {
+                                mediaPlayer = null
+                            }
                         }
-                        player.release()
-                        if (mediaPlayer === player) {
-                            mediaPlayer = null
-                        }
+                        finish()
                     }
+                    stopRunnable = stopTask
+                    mainHandler.postDelayed(stopTask, maxDurationMillis)
                 }
-                stopRunnable = stopTask
-                mainHandler.postDelayed(stopTask, durationMillis)
                 start()
-                println("Vipassana: MediaPlayer started successfully")
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            println("Vipassana: Error playing sound: ${e.message}")
+            onFinished?.invoke()
         }
     }
 
-    private fun playEndGongs() {
-        // Play gong 3 times with delay
-        // Using a coroutine or simple thread for delay is risky in service if killing, 
-        // but safe enough here for simple logic.
-        // Better: Use a separate logic. For simplicity, let's play one long sound or 3 rapid ones.
-        // If the user provides a single "3 gongs" file, it's easier.
-        // Assuming individual gong:
-        
-        Thread {
-            for (i in 1..3) {
-                 playSound(R.raw.gong_end)
-                 try { Thread.sleep(GONG_PLAY_DURATION_MILLIS) } catch (e: InterruptedException) {}
+    private fun playEndGongs(onComplete: (() -> Unit)? = null) {
+        cancelEndGongs()
+        acquireWakeLock("Vipassana::EndGongWakeLock", END_GONG_WAKELOCK_MILLIS)
+        var remaining = END_GONG_COUNT
+        fun playNext() {
+            playSelectedGong {
+                remaining--
+                if (remaining > 0) {
+                    val wait = Runnable { playNext() }
+                    endGongRunnable = wait
+                    mainHandler.postDelayed(wait, END_GONG_GAP_MILLIS)
+                } else {
+                    endGongRunnable = null
+                    onComplete?.invoke()
+                }
             }
-        }.start()
+        }
+        playNext()
+    }
+
+    private fun cancelEndGongs() {
+        endGongRunnable?.let { mainHandler.removeCallbacks(it) }
+        endGongRunnable = null
+        endGongCompleteRunnable?.let { mainHandler.removeCallbacks(it) }
+        endGongCompleteRunnable = null
     }
 
     private fun logSession(durationMillis: Long) {
@@ -348,10 +391,21 @@ class TimerService : Service() {
         MeditationLogStore.addSession(applicationContext, durationMillis)
     }
 
-    private fun releaseWakeLock() {
-        if (wakeLock?.isHeld == true) {
-            wakeLock?.release()
+    private fun acquireWakeLock(tag: String, timeoutMillis: Long) {
+        releaseWakeLock()
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag).apply {
+            setReferenceCounted(false)
+            acquire(timeoutMillis)
         }
+    }
+
+    private fun releaseWakeLock() {
+        val lock = wakeLock ?: return
+        if (lock.isHeld) {
+            lock.release()
+        }
+        wakeLock = null
     }
 
     private fun createNotificationChannel() {

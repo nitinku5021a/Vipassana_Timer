@@ -2,12 +2,14 @@ package com.vipassana.silenttimer.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val VipassanaGold = Color(0xFFD4AF37)
-val VipassanaGoldDark = Color(0xFFA88620)
-val BeigeLight = Color(0xFFFCEAAC)
-val BeigeBackground = Color(0xFFFDFCF5) // Very light cream
-val TextDark = Color(0xFF2C2C2C)
+val VipassanaGold = Color(0xFFC4A35A)
+val VipassanaGoldDark = Color(0xFF9A7B38)
+val Parchment = Color(0xFFF6F0E4)
+val CreamSurface = Color(0xFFEEE4D0)
+val Ink = Color(0xFF2A241C)
+val InkMuted = Color(0xFF6B6154)
 
-val DarkBackground = Color(0xFF1E1E1E)
-val DarkSurface = Color(0xFF2D2D2D)
-val TextLight = Color(0xFFE0E0E0)
+val DarkBackground = Color(0xFF14110E)
+val DarkSurface = Color(0xFF221E18)
+val TextLight = Color(0xFFE8DFD0)
+val TextLightMuted = Color(0xFFB8AFA0)

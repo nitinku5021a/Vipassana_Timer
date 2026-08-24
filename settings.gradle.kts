@@ -3,6 +3,10 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven {
+            name = "Gradle releases"
+            url = uri("https://repo.gradle.org/gradle/libs-releases")
+        }
     }
 }
 dependencyResolutionManagement {
@@ -10,6 +14,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        gradlePluginPortal()
+        maven {
+            name = "Gradle releases"
+            url = uri("https://repo.gradle.org/gradle/libs-releases")
+        }
     }
 }
 

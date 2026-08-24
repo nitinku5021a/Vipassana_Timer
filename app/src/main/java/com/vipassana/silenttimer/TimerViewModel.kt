@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.vipassana.silenttimer.logging.DailyTotal
 import com.vipassana.silenttimer.logging.MeditationLogStore
 import com.vipassana.silenttimer.service.TimerService
+import java.time.LocalDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -164,6 +165,15 @@ class TimerViewModel : ViewModel() {
                 MeditationLogStore.loadDailyTotals(context)
             }
             _dailyLogs.value = logs
+        }
+    }
+
+    fun deleteLog(context: Context, date: LocalDate) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                MeditationLogStore.deleteDay(context, date)
+            }
+            refreshLogs(context)
         }
     }
 }
